@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { JwtModule } from './jwt/jwt.module';
+import { UserModule } from './app/endpoints/user/user.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
         encrypt: false,
       },
     } as TypeOrmModuleOptions),
+    JwtModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],

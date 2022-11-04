@@ -32,23 +32,6 @@ export class ScreenDataService {
     order by favorities
   `;
 
-  private readonly weekEventsQueryString = `
-    select top 10
-      e.id,
-      e.name,
-      e.start_date,
-      c.name as local,
-      co.id as courseId,
-      co.name as course
-    from events e
-    inner join user_event ue on e.id = ue.event_id
-    inner join course_campus cc on cc.id = e.course_campus_id
-    inner join campus c on c.id = cc.campus_id
-    inner join courses co on co.id = cc.course_id
-    where e.start_date >= $1
-    and e.start_date <= $2
-  `;
-
   async getSignupData() {
     const genres = await this.genreService.find({
       select: { id: true, name: true },

@@ -3,10 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   BadRequestException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,7 +14,8 @@ import { CourseCampusService } from 'src/app/services/course-campus/course-campu
 import { hashSync } from 'bcrypt';
 import { JwtService } from 'src/jwt/jwt.service';
 import { UserToReponse } from './user.types';
-import { AccessToken } from 'src/auth/auth.types';
+import { AccessToken, jwtPayload } from 'src/auth/auth.types';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
 @Controller('user')
 export class UserController {
@@ -27,7 +27,9 @@ export class UserController {
   ) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto): Promise<any> {
+  async create(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<UserToReponse & AccessToken> {
     const namesArray = createUserDto.name.trim().split(' ');
     if (namesArray.length < 2) {
       throw new BadRequestException(['Informe seu nome completo']);
@@ -63,6 +65,22 @@ export class UserController {
       throw new BadRequestException(['Campus ou curso inexistente']);
     }
 
+    const existingUserEmail = await this.userService.findOne({
+      where: { email: createUserDto.email },
+    });
+
+    if (existingUserEmail) {
+      throw new BadRequestException(['Email já cadastrado']);
+    }
+
+    const existingUserAcademicRegistry = await this.userService.findOne({
+      where: { academicRegistry: createUserDto.academicRegistry },
+    });
+
+    if (existingUserAcademicRegistry) {
+      throw new BadRequestException(['Registro acadêmico já cadastrado']);
+    }
+
     const createdUser = await this.userService.create({
       ...createUserDto,
       genre: genre,
@@ -70,7 +88,7 @@ export class UserController {
       password: hashSync(createUserDto.password, 10),
     });
 
-    const userToResponse: UserToReponse & AccessToken = {
+    const userToResponse = {
       id: createdUser.id,
       name: createdUser.name,
       academicRegistry: createdUser.academicRegistry,
@@ -91,23 +109,23 @@ export class UserController {
     return userToResponse;
   }
 
-  // @Get()
-  // async findAll() {
-  //   return this.userService.findAll();
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getProfile(@Req() req: jwtPayload): Promise<UserToReponse> {
+    const user = await this.userService.getUserDetails(req.user.id);
 
-  // @Get(':id')
-  // async findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(id);
-  // }
-
-  // @Patch(':id')
-  // async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // async remove(@Param('id') id: string) {
-  //   return this.userService.remove(id);
-  // }
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      academicRegistry: user.academicRegistry,
+      phone: user.phone,
+      campus: user.courseCampus.campus.name,
+      course: user.courseCampus.course.name,
+      birthdate: user.birthdate,
+      genre: user.genre.name,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
 }

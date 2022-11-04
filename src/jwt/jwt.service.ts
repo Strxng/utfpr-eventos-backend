@@ -11,6 +11,6 @@ export class JwtService {
       email: userEmail,
     };
 
-    return this.nestJwtService.sign(payload);
+    return 'Bearer ' + this.nestJwtService.sign(payload);
   }
 }

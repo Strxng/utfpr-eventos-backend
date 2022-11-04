@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CourseCampusEntity } from './course_campus.entity';
 
 @Entity({ name: 'campus' })
 export class CampusEntity {
@@ -29,4 +31,7 @@ export class CampusEntity {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
+
+  @OneToMany(() => CourseCampusEntity, (courseCampus) => courseCampus.campus)
+  courseCampus: CourseCampusEntity[];
 }

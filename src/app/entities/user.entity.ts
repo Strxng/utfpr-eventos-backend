@@ -5,12 +5,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { GenreEntity } from './genre.entity';
 import { CourseCampusEntity } from './course_campus.entity';
+import { UserEventEntity } from './user-event.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -42,6 +44,9 @@ export class UserEntity {
   @ManyToOne(() => CourseCampusEntity, (courseCampus) => courseCampus.id)
   @JoinColumn({ name: 'course_campus_id' })
   courseCampus: CourseCampusEntity;
+
+  @OneToMany(() => UserEventEntity, (userEvent) => userEvent.user)
+  userEvents: UserEventEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -9,4 +9,9 @@ export class ScreenDataController {
   async getSignupData() {
     return await this.screenDataService.getSignupData();
   }
+
+  @Get('/home')
+  async getHomeData() {
+    return await this.screenDataService.getHomeData();
+  }
 }

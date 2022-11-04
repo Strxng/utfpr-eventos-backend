@@ -8,6 +8,8 @@ import { CourseCampusModule } from './app/services/course-campus/course-campus.m
 import { AuthModule } from './auth/auth.module';
 import { ScreenDataModule } from './app/endpoints/screen-data/screen-data.module';
 import { CampusModule } from './app/services/campus/campus.module';
+import { CourseModule } from './app/services/course/course.module';
+import { EventModule } from './app/services/event/event.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { CampusModule } from './app/services/campus/campus.module';
     AuthModule,
     ScreenDataModule,
     CampusModule,
+    CourseModule,
+    EventModule,
   ],
   controllers: [],
   providers: [],

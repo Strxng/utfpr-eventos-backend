@@ -17,11 +17,11 @@ export class CourseCampusEntity {
 
   @ManyToOne(() => CampusEntity, (campus) => campus.id)
   @JoinColumn({ name: 'campus_id' })
-  campusId: string;
+  campus: CampusEntity;
 
   @ManyToOne(() => CourseEntity, (course) => course.id)
   @JoinColumn({ name: 'course_id' })
-  courseId: string;
+  course: CourseEntity;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

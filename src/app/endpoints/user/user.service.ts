@@ -1,32 +1,62 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/app/entities/user.entity';
-import { FindOneOptions } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
+import { FindOneOptions, Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserToSave } from './user.types';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
+
+  async create(user: UserToSave) {
+    return await this.userRepository.save(user);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    return await this.userRepository.find({
+      select: ['id', 'name', 'email'],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(options: FindOneOptions<UserEntity>) {
+    return await this.userRepository.findOne(options);
   }
 
-  findOneOrFail(options: FindOneOptions<UserEntity>) {
-    return { password: 'teste' };
+  async findOneOrFail(options: FindOneOptions<UserEntity>) {
+    try {
+      return await this.userRepository.findOne(options);
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    this.userRepository.merge(user, updateUserDto);
+    return await this.userRepository.save(user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    await this.userRepository.findOneOrFail({ where: { id } });
+    await this.userRepository.softDelete({ id });
+  }
+
+  async getUserDetails(id: string) {
+    const user = await this.findOneOrFail({
+      relations: {
+        genre: true,
+        courseCampus: {
+          campus: true,
+          course: true,
+        },
+      },
+      where: { id },
+    });
+
+    return user;
   }
 }

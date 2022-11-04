@@ -1,5 +1,4 @@
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -10,7 +9,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { hashSync } from 'bcrypt';
 import { GenreEntity } from './genre.entity';
 import { CourseCampusEntity } from './course_campus.entity';
 
@@ -34,16 +32,16 @@ export class UserEntity {
   @Column({ nullable: false })
   birthdate: Date;
 
-  @Column()
+  @Column({ nullable: false })
   password: string;
 
   @ManyToOne(() => GenreEntity, (genre) => genre.id)
   @JoinColumn({ name: 'genre_id' })
-  genre: string;
+  genre: GenreEntity;
 
   @ManyToOne(() => CourseCampusEntity, (courseCampus) => courseCampus.id)
-  @JoinColumn({ name: 'couse_campus_id' })
-  courseCampus: string;
+  @JoinColumn({ name: 'course_campus_id' })
+  courseCampus: CourseCampusEntity;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -53,9 +51,4 @@ export class UserEntity {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
-
-  @BeforeInsert()
-  hashPassword() {
-    this.password = hashSync(this.password, 10);
-  }
 }

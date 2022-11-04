@@ -34,9 +34,13 @@ export class CreateUserDto {
   @IsUUID(4, { message: 'Gênero inválido' })
   genreId: string;
 
+  @IsNotEmpty({ message: 'Campus é obrigatório' })
+  @IsUUID(4, { message: 'Campus inválido' })
+  campusId: string;
+
   @IsNotEmpty({ message: 'Curso é obrigatório' })
   @IsUUID(4, { message: 'Curso inválido' })
-  courseCampusId: string;
+  courseId: string;
 
   @IsNotEmpty({ message: 'Senha é obrigatória' })
   @Matches(regexHelper.password, {

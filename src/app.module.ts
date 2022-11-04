@@ -3,6 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { JwtModule } from './jwt/jwt.module';
 import { UserModule } from './app/endpoints/user/user.module';
+import { GenreModule } from './app/services/genre/genre.module';
+import { CourseCampusModule } from './app/services/course-campus/course-campus.module';
+import { AuthModule } from './auth/auth.module';
+import { ScreenDataModule } from './app/endpoints/screen-data/screen-data.module';
+import { CampusModule } from './app/services/campus/campus.module';
 
 @Module({
   imports: [
@@ -22,6 +27,11 @@ import { UserModule } from './app/endpoints/user/user.module';
     } as TypeOrmModuleOptions),
     JwtModule,
     UserModule,
+    GenreModule,
+    CourseCampusModule,
+    AuthModule,
+    ScreenDataModule,
+    CampusModule,
   ],
   controllers: [],
   providers: [],

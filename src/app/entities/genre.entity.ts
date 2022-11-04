@@ -6,5 +6,5 @@ export class GenreEntity {
   id: string;
 
   @Column()
-  genre: string;
+  name: string;
 }

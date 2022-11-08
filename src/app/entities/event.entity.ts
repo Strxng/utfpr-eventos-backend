@@ -20,6 +20,12 @@ export class EventEntity {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  image: string;
+
+  @Column()
+  description: string;
+
   @Column({ name: 'start_date' })
   startDate: Date;
 
@@ -32,9 +38,6 @@ export class EventEntity {
 
   @OneToMany(() => UserEventEntity, (userEvent) => userEvent.event)
   userEvents: UserEventEntity[];
-
-  @Column()
-  description: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

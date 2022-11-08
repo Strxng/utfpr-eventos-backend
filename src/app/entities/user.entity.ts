@@ -22,6 +22,9 @@ export class UserEntity {
   @Column({ nullable: false })
   name: string;
 
+  @Column({ nullable: true })
+  image: string;
+
   @Column({ name: 'academic_registry', nullable: false })
   academicRegistry: string;
 

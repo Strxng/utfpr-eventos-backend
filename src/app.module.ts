@@ -9,7 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { ScreenDataModule } from './app/endpoints/screen-data/screen-data.module';
 import { CampusModule } from './app/services/campus/campus.module';
 import { CourseModule } from './app/services/course/course.module';
-import { EventModule } from './app/services/event/event.module';
+import { EventModule } from './app/endpoints/event/event.module';
+import { UserEventModule } from './app/services/user-event/user-event.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { EventModule } from './app/services/event/event.module';
     CampusModule,
     CourseModule,
     EventModule,
+    UserEventModule,
   ],
   controllers: [],
   providers: [],

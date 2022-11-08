@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CampusService } from 'src/app/services/campus/campus.service';
 import { CourseService } from 'src/app/services/course/course.service';
-import { EventService } from 'src/app/services/event/event.service';
 import { GenreService } from 'src/app/services/genre/genre.service';
 import { Between } from 'typeorm';
+import { EventService } from '../event/event.service';
 
 @Injectable()
 export class ScreenDataService {
@@ -18,18 +18,18 @@ export class ScreenDataService {
     select top 10
       e.id,
       e.name,
-      e.start_date,
+      e.start_date as startDate,
       c.name as local,
       co.id as courseId,
       co.name as course,
-      count(ue.id) as favorities
+      count(ue.id) as favorites
     from events e
     inner join user_event ue on e.id = ue.event_id
     inner join course_campus cc on cc.id = e.course_campus_id
     inner join campus c on c.id = cc.campus_id
     inner join courses co on co.id = cc.course_id
     group by e.id, e.name, e.start_date, c.name, co.id, co.name
-    order by favorities
+    order by favorites desc
   `;
 
   async getSignupData() {

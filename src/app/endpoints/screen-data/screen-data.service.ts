@@ -18,7 +18,10 @@ export class ScreenDataService {
     select top 10
       e.id,
       e.name,
+      e.image,
+      e.description,
       e.start_date as startDate,
+      e.end_date as endDate,
       c.name as local,
       co.id as courseId,
       co.name as course,
@@ -28,7 +31,7 @@ export class ScreenDataService {
     inner join course_campus cc on cc.id = e.course_campus_id
     inner join campus c on c.id = cc.campus_id
     inner join courses co on co.id = cc.course_id
-    group by e.id, e.name, e.start_date, c.name, co.id, co.name
+    group by e.id, e.name, e.image, e.description, e.start_date, e.end_date, c.name, co.id, co.name
     order by favorites desc
   `;
 
@@ -93,7 +96,10 @@ export class ScreenDataService {
       return {
         id: event.id,
         name: event.name,
+        image: event.image,
+        description: event.description,
         startDate: event.startDate,
+        endDate: event.endDate,
         local: event.courseCampus.campus.city,
         courseId: event.courseCampus.course.id,
         course: event.courseCampus.course.name,

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ScreenDataService } from './screen-data.service';
 
 @Controller('screen-data')
@@ -11,7 +11,7 @@ export class ScreenDataController {
   }
 
   @Get('/home')
-  async getHomeData() {
-    return await this.screenDataService.getHomeData();
+  async getHomeData(@Query('categoryId') categoryId: string) {
+    return await this.screenDataService.getHomeData(categoryId);
   }
 }

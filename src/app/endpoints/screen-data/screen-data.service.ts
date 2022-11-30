@@ -14,26 +14,52 @@ export class ScreenDataService {
     private readonly eventService: EventService,
   ) {}
 
-  private readonly popularEventsQueryString = `
-    select top 10
-      e.id,
-      e.name,
-      e.image,
-      e.description,
-      e.start_date as startDate,
-      e.end_date as endDate,
-      c.name as local,
-      co.id as courseId,
-      co.name as course,
-      count(ue.id) as favorites
-    from events e
-    inner join user_event ue on e.id = ue.event_id
-    inner join course_campus cc on cc.id = e.course_campus_id
-    inner join campus c on c.id = cc.campus_id
-    inner join courses co on co.id = cc.course_id
-    group by e.id, e.name, e.image, e.description, e.start_date, e.end_date, c.name, co.id, co.name
-    order by favorites desc
-  `;
+  private getPopularEventsQueryString() {
+    return `
+      select top 10
+        e.id,
+        e.name,
+        e.image,
+        e.description,
+        e.start_date as startDate,
+        e.end_date as endDate,
+        c.name as local,
+        co.id as courseId,
+        co.name as course,
+        count(ue.id) as favorites
+      from events e
+      inner join user_event ue on e.id = ue.event_id
+      inner join course_campus cc on cc.id = e.course_campus_id
+      inner join campus c on c.id = cc.campus_id
+      inner join courses co on co.id = cc.course_id
+      group by e.id, e.name, e.image, e.description, e.start_date, e.end_date, c.name, co.id, co.name
+      order by favorites desc
+    `;
+  }
+
+  private getPopularEventsWithCategoryQueryString(categoryId: string): string {
+    return `
+      select top 10
+        e.id,
+        e.name,
+        e.image,
+        e.description,
+        e.start_date as startDate,
+        e.end_date as endDate,
+        c.name as local,
+        co.id as courseId,
+        co.name as course,
+        count(ue.id) as favorites
+      from events e
+      inner join user_event ue on e.id = ue.event_id
+      inner join course_campus cc on cc.id = e.course_campus_id
+      inner join campus c on c.id = cc.campus_id
+      inner join courses co on co.id = cc.course_id
+      where co.id = '${categoryId}'
+      group by e.id, e.name, e.image, e.description, e.start_date, e.end_date, c.name, co.id, co.name
+      order by favorites desc
+    `;
+  }
 
   async getSignupData() {
     const genres = await this.genreService.find({
@@ -67,30 +93,55 @@ export class ScreenDataService {
     };
   }
 
-  async getHomeData() {
+  async getHomeData(categoryId = '') {
     const courses = await this.courseService.find({
       select: { id: true, name: true },
     });
 
-    const popularEvents = await this.eventService.query(
-      this.popularEventsQueryString,
-    );
+    let popularEvents: any;
+    if (categoryId) {
+      popularEvents = await this.eventService.query(
+        this.getPopularEventsWithCategoryQueryString(categoryId),
+      );
+    } else {
+      popularEvents = await this.eventService.query(
+        this.getPopularEventsQueryString(),
+      );
+    }
 
     const dateNow = new Date();
     const dateAfterWeek = new Date();
     dateAfterWeek.setDate(dateNow.getDate() + 7);
 
-    const weekEvents = await this.eventService.find({
-      relations: {
-        courseCampus: {
-          campus: true,
-          course: true,
+    let weekEvents: any;
+    if (categoryId) {
+      weekEvents = await this.eventService.find({
+        relations: {
+          courseCampus: {
+            campus: true,
+            course: true,
+          },
         },
-      },
-      where: {
-        startDate: Between(dateNow, dateAfterWeek),
-      },
-    });
+        where: {
+          startDate: Between(dateNow, dateAfterWeek),
+          courseCampus: {
+            course: { id: categoryId },
+          },
+        },
+      });
+    } else {
+      weekEvents = await this.eventService.find({
+        relations: {
+          courseCampus: {
+            campus: true,
+            course: true,
+          },
+        },
+        where: {
+          startDate: Between(dateNow, dateAfterWeek),
+        },
+      });
+    }
 
     const formatedWeekEvents = weekEvents.map((event) => {
       return {

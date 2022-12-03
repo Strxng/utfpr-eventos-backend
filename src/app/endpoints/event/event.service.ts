@@ -32,4 +32,26 @@ export class EventService {
 
     return await this.userEventService.create(user, event);
   }
+
+  async unfavoriteEvent(eventId: string, userId: string) {
+    return await this.userEventService.destroy(userId, eventId);
+  }
+
+  async getAllFavoriteEvents(userId: string) {
+    const response = await this.find({
+      where: { userEvents: { user: { id: userId } } },
+      relations: { courseCampus: { campus: true } },
+    });
+
+    const events = response.filter((event) => event.endDate > new Date());
+
+    const finishedEvents = response.filter(
+      (event) => event.endDate < new Date(),
+    );
+
+    return {
+      events,
+      finishedEvents,
+    };
+  }
 }

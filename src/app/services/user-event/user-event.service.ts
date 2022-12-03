@@ -20,4 +20,11 @@ export class UserEventService {
       updatedAt: new Date(),
     });
   }
+
+  async destroy(userId: string, eventId: string) {
+    return await this.userEventEntity.softDelete({
+      event: { id: eventId },
+      user: { id: userId },
+    });
+  }
 }

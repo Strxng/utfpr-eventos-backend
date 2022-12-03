@@ -5,6 +5,20 @@ import { GenreService } from 'src/app/services/genre/genre.service';
 import { Between } from 'typeorm';
 import { EventService } from '../event/event.service';
 
+interface PopularEvent {
+  id: string;
+  name: string;
+  image: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  local: string;
+  courseId: string;
+  course: string;
+  favorites: number;
+  isFavorite: boolean;
+}
+
 @Injectable()
 export class ScreenDataService {
   constructor(
@@ -14,49 +28,53 @@ export class ScreenDataService {
     private readonly eventService: EventService,
   ) {}
 
-  private getPopularEventsQueryString() {
+  private getPopularEventsQueryString(userId: string) {
     return `
       select top 10
         e.id,
         e.name,
         e.image,
         e.description,
+        e.local,
         e.start_date as startDate,
         e.end_date as endDate,
-        c.name as local,
         co.id as courseId,
         co.name as course,
-        count(ue.id) as favorites
+        c.name as campus,
+        (select count(*) from user_event where event_id = e.id and deleted_at is null) as favorites,
+        (select count(*) from user_event where user_id = '${userId}' and event_id = e.id and deleted_at is null) as isFavorite
       from events e
-      inner join user_event ue on e.id = ue.event_id
       inner join course_campus cc on cc.id = e.course_campus_id
       inner join campus c on c.id = cc.campus_id
       inner join courses co on co.id = cc.course_id
-      group by e.id, e.name, e.image, e.description, e.start_date, e.end_date, c.name, co.id, co.name
+      where (e.start_date > getdate() or e.end_date > getdate())
       order by favorites desc
     `;
   }
 
-  private getPopularEventsWithCategoryQueryString(categoryId: string): string {
+  private getPopularEventsWithCategoryQueryString(
+    categoryId: string,
+    userId: string,
+  ): string {
     return `
       select top 10
         e.id,
         e.name,
         e.image,
         e.description,
+        e.local,
         e.start_date as startDate,
         e.end_date as endDate,
-        c.name as local,
         co.id as courseId,
         co.name as course,
-        count(ue.id) as favorites
+        c.name as campus,
+        (select count(*) from user_event where event_id = e.id and deleted_at is null) as favorites,
+        (select count(*) from user_event where user_id = '${userId}' and event_id = e.id and deleted_at is null) as isFavorite
       from events e
-      inner join user_event ue on e.id = ue.event_id
       inner join course_campus cc on cc.id = e.course_campus_id
       inner join campus c on c.id = cc.campus_id
       inner join courses co on co.id = cc.course_id
-      where co.id = '${categoryId}'
-      group by e.id, e.name, e.image, e.description, e.start_date, e.end_date, c.name, co.id, co.name
+      where co.id = '${categoryId}' and (e.start_date > getdate() or e.end_date > getdate())
       order by favorites desc
     `;
   }
@@ -93,21 +111,25 @@ export class ScreenDataService {
     };
   }
 
-  async getHomeData(categoryId = '') {
+  async getHomeData(categoryId = '', userId: string) {
     const courses = await this.courseService.find({
       select: { id: true, name: true },
     });
 
-    let popularEvents: any;
+    let popularEvents: PopularEvent[];
     if (categoryId) {
       popularEvents = await this.eventService.query(
-        this.getPopularEventsWithCategoryQueryString(categoryId),
+        this.getPopularEventsWithCategoryQueryString(categoryId, userId),
       );
     } else {
       popularEvents = await this.eventService.query(
-        this.getPopularEventsQueryString(),
+        this.getPopularEventsQueryString(userId),
       );
     }
+
+    const formatedPopularEvents = popularEvents.map((event) => {
+      return { ...event, isFavorite: event.isFavorite ? true : false };
+    });
 
     const dateNow = new Date();
     const dateAfterWeek = new Date();
@@ -159,7 +181,7 @@ export class ScreenDataService {
 
     return {
       courses,
-      popularEvents,
+      popularEvents: formatedPopularEvents,
       weekEvents: formatedWeekEvents,
     };
   }

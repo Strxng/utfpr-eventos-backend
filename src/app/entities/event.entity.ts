@@ -26,6 +26,9 @@ export class EventEntity {
   @Column()
   description: string;
 
+  @Column()
+  local: string;
+
   @Column({ name: 'start_date' })
   startDate: Date;
 

@@ -17,6 +17,7 @@ export interface SearchEventProps {
   page: number;
   limit: number;
   search: string;
-  categoryId: string;
+  campusId: string;
+  courseId: string;
   userId: string;
 }

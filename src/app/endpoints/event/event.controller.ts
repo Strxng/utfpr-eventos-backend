@@ -19,19 +19,41 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('/')
+  async getAllEvents(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search: string,
+    @Query('campusId') campusId: string,
+    @Query('courseId') courseId: string,
+    @Req() req,
+  ) {
+    return await this.eventService.getAllEvents({
+      page: page || 1,
+      limit,
+      search,
+      campusId,
+      courseId,
+      userId: req.user.id,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('/popular')
   async getPopularEvents(
     @Query('page') page: number,
     @Query('limit') limit: number,
     @Query('search') search: string,
-    @Query('categoryId') categoryId: string,
+    @Query('campusId') campusId: string,
+    @Query('courseId') courseId: string,
     @Req() req,
   ) {
     return await this.eventService.getPopularEvents({
-      page,
+      page: page || 1,
       limit,
       search,
-      categoryId,
+      campusId,
+      courseId,
       userId: req.user.id,
     });
   }
@@ -42,14 +64,16 @@ export class EventController {
     @Query('page') page: number,
     @Query('limit') limit: number,
     @Query('search') search: string,
-    @Query('categoryId') categoryId: string,
+    @Query('campusId') campusId: string,
+    @Query('courseId') courseId: string,
     @Req() req,
   ) {
     return await this.eventService.getWeekEvents({
-      page,
+      page: page || 1,
       limit,
       search,
-      categoryId,
+      campusId,
+      courseId,
       userId: req.user.id,
     });
   }

@@ -3,7 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EventEntity } from 'src/app/entities/event.entity';
 import { UserEventEntity } from 'src/app/entities/user-event.entity';
 import { UserEventService } from 'src/app/services/user-event/user-event.service';
-import { Between, FindManyOptions, Like, Repository } from 'typeorm';
+import {
+  Between,
+  FindManyOptions,
+  FindOptionsWhere,
+  Like,
+  Repository,
+} from 'typeorm';
 import { UserService } from '../user/user.service';
 import { EventResponse, SearchEventProps } from './event.types';
 
@@ -102,48 +108,38 @@ export class EventService {
     page = 1,
     limit = 10,
     search = '',
-    categoryId = '',
+    campusId = '',
+    courseId = '',
     userId,
   }: SearchEventProps): Promise<EventResponse[]> {
-    let popularEvents: any[];
-    if (categoryId) {
-      popularEvents = await this.find({
-        relations: {
-          courseCampus: {
-            campus: true,
-            course: true,
-          },
-          userEvents: {
-            user: true,
-          },
-        },
-        where: {
-          name: Like(`%${search}%`),
-          courseCampus: {
-            course: { id: categoryId },
-          },
-        },
-        take: limit,
-        skip: page - 1,
-      });
-    } else {
-      popularEvents = await this.find({
-        relations: {
-          courseCampus: {
-            campus: true,
-            course: true,
-          },
-          userEvents: {
-            user: true,
-          },
-        },
-        where: {
-          name: Like(`%${search}%`),
-        },
-        take: limit,
-        skip: page - 1,
-      });
+    const where: FindOptionsWhere<EventEntity> = {
+      name: Like(`%${search}%`),
+    };
+
+    if (campusId || courseId) {
+      where.courseCampus = {};
+      if (campusId) {
+        where.courseCampus.campus = { id: campusId };
+      }
+      if (courseId) {
+        where.courseCampus.course = { id: courseId };
+      }
     }
+
+    const popularEvents = await this.find({
+      relations: {
+        courseCampus: {
+          campus: true,
+          course: true,
+        },
+        userEvents: {
+          user: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      where,
+    });
 
     const formatedPopularEvents: EventResponse[] = popularEvents.map(
       (event: EventEntity) => {
@@ -173,54 +169,106 @@ export class EventService {
     page = 1,
     limit = 10,
     search = '',
-    categoryId = '',
+    campusId = '',
+    courseId = '',
     userId,
   }: SearchEventProps): Promise<EventResponse[]> {
     const dateNow = new Date();
     const dateAfterWeek = new Date();
     dateAfterWeek.setDate(dateNow.getDate() + 7);
 
-    let weekEvents: any[];
-    if (categoryId) {
-      weekEvents = await this.find({
-        relations: {
-          courseCampus: {
-            campus: true,
-            course: true,
-          },
-          userEvents: {
-            user: true,
-          },
-        },
-        where: {
-          startDate: Between(dateNow, dateAfterWeek),
-          name: Like(`%${search}%`),
-          courseCampus: {
-            course: { id: categoryId },
-          },
-        },
-        take: limit,
-        skip: page - 1,
-      });
-    } else {
-      weekEvents = await this.find({
-        relations: {
-          courseCampus: {
-            campus: true,
-            course: true,
-          },
-          userEvents: {
-            user: true,
-          },
-        },
-        where: {
-          startDate: Between(dateNow, dateAfterWeek),
-          name: Like(`%${search}%`),
-        },
-        take: limit,
-        skip: page - 1,
-      });
+    const where: FindOptionsWhere<EventEntity> = {
+      startDate: Between(dateNow, dateAfterWeek),
+      name: Like(`%${search}%`),
+    };
+
+    if (campusId || courseId) {
+      where.courseCampus = {};
+      if (campusId) {
+        where.courseCampus.campus = { id: campusId };
+      }
+      if (courseId) {
+        where.courseCampus.course = { id: courseId };
+      }
     }
+
+    const weekEvents = await this.find({
+      relations: {
+        courseCampus: {
+          campus: true,
+          course: true,
+        },
+        userEvents: {
+          user: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      where,
+    });
+
+    const formatedWeekEvents: EventResponse[] = weekEvents.map(
+      (event: EventEntity) => {
+        const isFavorite = event.userEvents.find(
+          (userEvent: UserEventEntity) => userEvent.user.id === userId,
+        );
+
+        return {
+          id: event.id,
+          name: event.name,
+          image: event.image,
+          description: event.description,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          local: event.courseCampus.campus.city,
+          courseId: event.courseCampus.course.id,
+          course: event.courseCampus.course.name,
+          campus: event.courseCampus.campus.name,
+          isFavorite: !!isFavorite,
+          favorites: event.userEvents.length,
+        };
+      },
+    );
+
+    return formatedWeekEvents;
+  }
+
+  async getAllEvents({
+    page = 1,
+    limit = 10,
+    search = '',
+    campusId = '',
+    courseId = '',
+    userId,
+  }: SearchEventProps): Promise<EventResponse[]> {
+    const where: FindOptionsWhere<EventEntity> = {
+      name: Like(`%${search}%`),
+    };
+
+    if (campusId || courseId) {
+      where.courseCampus = {};
+      if (campusId) {
+        where.courseCampus.campus = { id: campusId };
+      }
+      if (courseId) {
+        where.courseCampus.course = { id: courseId };
+      }
+    }
+
+    const weekEvents = await this.find({
+      relations: {
+        courseCampus: {
+          campus: true,
+          course: true,
+        },
+        userEvents: {
+          user: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      where,
+    });
 
     const formatedWeekEvents: EventResponse[] = weekEvents.map(
       (event: EventEntity) => {

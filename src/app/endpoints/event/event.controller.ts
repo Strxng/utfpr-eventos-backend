@@ -19,15 +19,39 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('/popular-week')
-  async getPopularAndWeekEvents(
+  @Get('/popular')
+  async getPopularEvents(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search: string,
     @Query('categoryId') categoryId: string,
     @Req() req,
   ) {
-    return await this.eventService.getPopularWeekEvents(
+    return await this.eventService.getPopularEvents({
+      page,
+      limit,
+      search,
       categoryId,
-      req.user.id,
-    );
+      userId: req.user.id,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/week')
+  async getWeekEvents(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search: string,
+    @Query('categoryId') categoryId: string,
+    @Req() req,
+  ) {
+    return await this.eventService.getWeekEvents({
+      page,
+      limit,
+      search,
+      categoryId,
+      userId: req.user.id,
+    });
   }
 
   @UseGuards(JwtAuthGuard)

@@ -42,14 +42,55 @@ export class EventService {
   async getAllFavoriteEvents(userId: string) {
     const response = await this.find({
       where: { userEvents: { user: { id: userId } } },
-      relations: { courseCampus: { campus: true } },
+      relations: {
+        courseCampus: { campus: true, course: true },
+        userEvents: {
+          user: true,
+        },
+      },
     });
 
-    const events = response.filter((event) => event.endDate > new Date());
+    const events: EventResponse[] = response
+      .filter((event) => event.endDate > new Date())
+      .map((event) => {
+        return {
+          id: event.id,
+          campus: event.courseCampus.campus.name,
+          course: event.courseCampus.course.name,
+          courseId: event.courseCampus.course.id,
+          description: event.description,
+          endDate: event.endDate,
+          startDate: event.startDate,
+          favorites: event.userEvents.length,
+          image: event.image,
+          isFavorite: !!event.userEvents.find(
+            (userEvent) => userEvent.user.id === userId,
+          ),
+          local: event.local,
+          name: event.name,
+        };
+      });
 
-    const finishedEvents = response.filter(
-      (event) => event.endDate < new Date(),
-    );
+    const finishedEvents: EventResponse[] = response
+      .filter((event) => event.endDate < new Date())
+      .map((event) => {
+        return {
+          id: event.id,
+          campus: event.courseCampus.campus.name,
+          course: event.courseCampus.course.name,
+          courseId: event.courseCampus.course.id,
+          description: event.description,
+          endDate: event.endDate,
+          startDate: event.startDate,
+          favorites: event.userEvents.length,
+          image: event.image,
+          isFavorite: !!event.userEvents.find(
+            (userEvent) => userEvent.user.id === userId,
+          ),
+          local: event.local,
+          name: event.name,
+        };
+      });
 
     return {
       events,

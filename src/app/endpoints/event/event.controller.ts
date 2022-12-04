@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   Get,
+  Query,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { FavoriteEventDto } from './dto/favorite-event.dto';
@@ -16,6 +17,18 @@ import { jwtPayload } from 'src/auth/auth.types';
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/popular-week')
+  async getPopularAndWeekEvents(
+    @Query('categoryId') categoryId: string,
+    @Req() req,
+  ) {
+    return await this.eventService.getPopularWeekEvents(
+      categoryId,
+      req.user.id,
+    );
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post('favorite')

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CourseEntity } from 'src/app/entities/course.entity';
-import { FindManyOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CourseService {
@@ -10,7 +10,9 @@ export class CourseService {
     private readonly courseRepository: Repository<CourseEntity>,
   ) {}
 
-  async find(options?: FindManyOptions<CourseEntity>) {
-    return await this.courseRepository.find(options);
+  async findAll() {
+    return await this.courseRepository.find({
+      select: { id: true, name: true },
+    });
   }
 }

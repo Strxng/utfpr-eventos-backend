@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { GenreService } from 'src/app/services/genre/genre.service';
 import { CourseCampusService } from 'src/app/services/course-campus/course-campus.service';
 import { hashSync } from 'bcrypt';
 import { JwtService } from 'src/jwt/jwt.service';
 import { UserToReponse } from './user.types';
 import { AccessToken, jwtPayload } from 'src/auth/auth.types';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { GenreService } from '../genre/genre.service';
 
 @Controller('user')
 export class UserController {

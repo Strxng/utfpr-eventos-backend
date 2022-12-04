@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { GenreModule } from 'src/app/services/genre/genre.module';
+import { GenreModule } from 'src/app/endpoints/genre/genre.module';
 import { CourseCampusModule } from 'src/app/services/course-campus/course-campus.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/app/entities/user.entity';
